@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using DatingApp.Api.Data;
+using DatingApp.Api.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,34 +12,41 @@ namespace DatingApp.Api.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class ValuesController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private readonly DataContext context;
-        
-        public ValuesController(DataContext context)
+        private readonly IMapper mapper;
+
+        public UsersController(DataContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
         }
 
         // GET api/values
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok(await this.context.Values.ToListAsync());
+            var users = await this.context.Users.GetUsers();
+            var usersToReturn = this.mapper.Map<IEnumerable<UserForListDto>>(users);
+
+            return Ok(usersToReturn);
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var value = await this.context.Values.FirstOrDefaultAsync(x => x.Id == id);
+            var user = await this.context.Users.GetUser(id);
 
-            if (value is null)
+            if (user is null)
             {
                 return this.NotFound();
             }
 
-            return this.Ok(value);
+            var userToReturn = this.mapper.Map<UserForDetailedDto>(user);
+
+            return this.Ok(userToReturn);
         }
 
         // POST api/values

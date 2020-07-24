@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Text;
 using DatingApp.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace DatingApp.Api.Data
 {
@@ -42,13 +43,29 @@ namespace DatingApp.Api.Data
                 throw new InvalidOperationException("The user already exists.");
             }
 
+            CreatePasswordHash(password, out var hashedPassword, out var passwordSalt);
+            var registerUser = new User { UserName = user.UserName, PasswordSalt = passwordSalt, PasswordHash = hashedPassword };
+            await userSet.AddAsync(registerUser);
+            return registerUser;
+        }
+
+        internal static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        {
             using (var shaM = new HMACSHA512())
             {
-                var hashedPassword = shaM.ComputeHash(Encoding.UTF8.GetBytes(password));
-                var registerUser = new User { UserName = user.UserName, PasswordSalt = shaM.Key, PasswordHash = hashedPassword};
-                await userSet.AddAsync(registerUser);
-                return registerUser;
+                passwordSalt = shaM.Key;
+                passwordHash = shaM.ComputeHash(Encoding.UTF8.GetBytes(password));
             }
+        }
+
+        internal static async Task<User> GetUser(this DbSet<User> userSet, int id)
+        {
+            return await userSet.Include(x => x.Photos).FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        internal static async Task<IEnumerable<User>> GetUsers(this DbSet<User> userSet)
+        {
+            return await userSet.Include(x => x.Photos).ToListAsync();
         }
     }
 }
