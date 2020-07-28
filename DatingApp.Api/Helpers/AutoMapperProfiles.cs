@@ -10,6 +10,7 @@ namespace DatingApp.Api.Helpers
     {
         public AutoMapperProfiles()
         {
+            this.CreateMap<UserForUpdateDto, User>();
             this.CreateMap<User, UserForListDto>()
                 .ForMember(
                     dest => dest.PhotoUrl,
