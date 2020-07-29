@@ -18,7 +18,7 @@ namespace DatingApp.Api.Data
 
         public static async Task<User> LoginAsync(this IQueryable<User> userSet, string userName, string password)
         {
-            var user = await userSet.FirstOrDefaultAsync(x => x.UserName == userName);
+            var user = await userSet.Include(x => x.Photos).FirstOrDefaultAsync(x => x.UserName == userName);
             if (user is null || !VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
             {
                 return null;

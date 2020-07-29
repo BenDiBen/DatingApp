@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 
@@ -12,7 +13,7 @@ namespace DatingApp.Api.Helpers
             response.Headers.Add("Access-Control-Expose-Headers", "Application-Error");
             response.Headers.Add("Access-Control-Allow-Origin", "*");
         }
-        
+
         public static void AddApplicationError(this HttpResponse response, IExceptionHandlerFeature error)
         {
             response.AddApplicationError(error.Error.Message);
@@ -27,6 +28,11 @@ namespace DatingApp.Api.Helpers
             }
 
             return age;
+        }
+
+        public static bool IsSuccessStatusCode(this HttpStatusCode statusCode)
+        {
+            return ((int)statusCode >= 200) && ((int)statusCode <= 299);
         }
     }
 }
